@@ -11,7 +11,12 @@ public class WaveSpawner : MonoBehaviour
     void Start()
     {
         InvokeRepeating("Spawn", startTime, spawnRate);
-        Invoke("CancelInvoke", endTime);
+        Invoke("EndSpawner", endTime);
+    }
+
+    private void EndSpawner()
+    {
+        CancelInvoke();
     }
 
     private void Spawn()
