@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Wave_Scripts
 {
@@ -10,6 +11,7 @@ namespace Wave_Scripts
         public static WavesManager instance;
 
         public List<WaveSpawner> waves;
+        public UnityEvent onChanged;
 
         private void Awake()
         {
@@ -23,6 +25,18 @@ namespace Wave_Scripts
             }
         }
 
+        public void AddWave(WaveSpawner wave)
+        {
+            waves.Add(wave);
+            onChanged.Invoke();
+        }
+        
+        public void RemoveWave(WaveSpawner wave)
+        {
+            waves.Remove(wave);
+            onChanged.Invoke();
+        }
+        
         // Start is called before the first frame update
         void Start()
         {

@@ -9,7 +9,7 @@ namespace Enemy_Scripts
         // Start is called before the first frame update
         void Start()
         {
-            EnemiesManager.instance.enemies.Add(this);
+            EnemiesManager.instance.AddEnemy(this);
         }
 
         // Update is called once per frame
@@ -20,7 +20,7 @@ namespace Enemy_Scripts
 
         private void OnDestroy()
         {
-            EnemiesManager.instance.enemies.Remove(this);
+            EnemiesManager.instance.RemoveEnemy(this);
         }
     }
 }
