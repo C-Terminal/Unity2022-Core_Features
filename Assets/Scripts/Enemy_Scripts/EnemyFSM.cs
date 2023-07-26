@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace Enemy_Scripts
 {
@@ -21,11 +22,14 @@ namespace Enemy_Scripts
 
         public float baseAttackDistance;
         public float playerAttackDistance;
-
+        private NavMeshAgent _agent;
+        public GameObject bulletPrefab;
+        public float fireRate, lastShootTime;
 
         private void Awake()
         {
             baseTransform = GameObject.Find("Base").transform;
+            _agent = GetComponentInParent<NavMeshAgent>();
         }
 
         // Update is called once per frame
@@ -51,11 +55,14 @@ namespace Enemy_Scripts
 
         private void AttackPlayer()
         {
+            _agent.isStopped = true;
             if (sightSensor.detectedObject == null)
             {
                 currentState = EnemyState.GoToBase;
                 return;
             }
+            LookTo(sightSensor.detectedObject.transform.position);
+            Shoot();
 
             float distanceToPlayer = Vector3.Distance(transform.position,
                 sightSensor.detectedObject.transform.position);
@@ -68,11 +75,15 @@ namespace Enemy_Scripts
 
         private void ChasePlayer()
         {
+            _agent.isStopped = false;
+
             if (sightSensor.detectedObject == null)
             {
                 currentState = EnemyState.GoToBase;
                 return;
             }
+
+            _agent.SetDestination(sightSensor.detectedObject.transform.position);
 
             float distanceToPlayer = Vector3.Distance(transform.position,
                 sightSensor.detectedObject.transform.position);
@@ -85,11 +96,16 @@ namespace Enemy_Scripts
 
         private void AttackBase()
         {
-            print("AttackBase");
+            _agent.isStopped = true;
+            LookTo(baseTransform.position);
+            Shoot();
         }
 
         private void GoToBase()
         {
+            _agent.isStopped = false;
+            _agent.SetDestination(baseTransform.position);
+
             if (sightSensor.detectedObject != null)
             {
                 currentState = EnemyState.ChasePlayer;
@@ -108,9 +124,28 @@ namespace Enemy_Scripts
         {
             Gizmos.color = Color.blue;
             Gizmos.DrawWireSphere(transform.position, playerAttackDistance);
-            
+
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireSphere(transform.position, baseAttackDistance);
+        }
+
+        void Shoot()
+        {
+            var timeSinceLastShoot = Time.time - lastShootTime;
+            if (timeSinceLastShoot > fireRate)
+            {
+                lastShootTime = Time.time;
+                Instantiate(bulletPrefab,
+                    transform.position, transform.rotation);
+            }
+        }
+
+        void LookTo(Vector3 targetPosition)
+        {
+            Vector3 directionToPosition = Vector3.Normalize(
+                targetPosition - transform.parent.position);
+            directionToPosition.y = 0;
+            transform.parent.forward = directionToPosition;
         }
     }
 }
